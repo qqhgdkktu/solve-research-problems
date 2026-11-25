@@ -1,37 +1,37 @@
 # Solve Research Problems
 
-Навык для Codex, который помогает решать сложные задачи в математике, физике, разработке и анализе данных. Он задаёт критерий проверки, подбирает способ опровергнуть слабую гипотезу и помогает поручить субагенту независимую проверку, если она может изменить вывод.
+A Codex skill for difficult problems in mathematics, physics, software engineering, and data analysis. It helps Codex define what would count as a solution, test promising hypotheses, and delegate an independent check when it could change the conclusion.
 
-## Установка
+## Installation
 
-Для новой установки клонируйте репозиторий в пользовательскую папку навыков Codex.
+Clone the repository into your Codex skills directory.
 
 ```sh
 mkdir -p "$HOME/.agents/skills"
 git clone https://github.com/qqhgdkktu/solve-research-problems.git "$HOME/.agents/skills/solve-research-problems"
 ```
 
-Если навык уже установлен, используйте его существующую папку. Для обновления копии, установленной командой выше, выполните `git -C "$HOME/.agents/skills/solve-research-problems" pull --ff-only`. Если навык не появился в списке, перезапустите Codex. [Документация Codex о навыках](https://developers.openai.com/codex/skills)
+If you already installed the skill elsewhere, update that copy. To update a clone installed with the commands above, run `git -C "$HOME/.agents/skills/solve-research-problems" pull --ff-only`. Restart Codex if the skill does not appear. [Codex skills documentation](https://developers.openai.com/codex/skills)
 
-## Как использовать
+## Usage
 
-Укажите `$solve-research-problems` в запросе и приложите условие, код, данные или доказательство. Вот запрос для проверки доказательства.
+Include `$solve-research-problems` in your prompt and provide the problem statement, code, data, or proof. For example, you can ask Codex to review a proof.
 
-> Используй $solve-research-problems. Проверь, верно ли приложенное доказательство для всех положительных параметров. Если найдёшь пробел, укажи точный переход и попробуй построить контрпример. Если независимый метод поможет, поручи субагенту проверить этот шаг.
+> Use $solve-research-problems. Check whether the attached proof holds for all positive parameters. If you find a gap, identify the exact step and try to construct a counterexample. If an independent derivation could resolve that step, ask a subagent to check it.
 
-Навык подходит и для отладки. Попросите Codex найти минимальный вход, воспроизвести ошибку через обычный интерфейс и выполнить тест из итогового решения. Для аналитической задачи задайте исходные строки и знаменатель, затем попросите проверить, сохраняется ли вывод внутри сегментов.
+For debugging, ask Codex to find the smallest input that reproduces the bug, exercise the normal entry point, and run the test from the final deliverable. For data analysis, provide the source rows and the denominator, then ask whether the conclusion holds within each segment.
 
-## Как работает навык
+## How it works
 
-1. **Фиксирует критерий проверки.** Для доказательства это может быть контрпример или предельный случай. Для кода — исполнимый тест. Для аналитики — независимый пересчёт.
-2. **Обычно работает одним агентом.** Если другая ветка способна снять конкретную неопределённость, субагент получает один вопрос, нужные данные, ожидаемый артефакт и условие остановки. При независимом выводе он получает постановку без ожидаемого ответа.
-3. **Меняет подход после тупика.** Пробует другой метод, данные или проверку. Сохраняет короткую запись о препятствии, если она поможет избежать повтора.
-4. **Проверяет то, что получит пользователь.** Запускает код из итогового файла, сверяет утверждение с формальной постановкой или пересчитывает вывод на исходных данных.
+1. **Define the check.** Start with a small case, limiting case, counterexample, executable test, or independent calculation that can distinguish plausible answers.
+2. **Work independently by default.** Delegate a specific uncertainty that another method, dataset, or reviewer could resolve. Give the subagent one question, the relevant inputs, a verifiable deliverable, and a stopping condition. For an independent derivation, withhold the expected answer.
+3. **Change course when a check fails.** Try a different method, input, or test. Keep a one-line record of a dead end if it prevents duplicated work.
+4. **Verify the final deliverable.** Run the code from the file being handed over, compare the formal statement with the original claim, or recompute the result from the source data.
 
-[Основная инструкция](SKILL.md) содержит около 200 слов. [Три шаблона поручений](references/assignments.md) доступны по необходимости.
+The [skill instructions](SKILL.md) and [three delegation templates](references/assignments.md) are written in Russian. The main instruction is about 200 words, and the templates are available on demand.
 
-## На чём основан подход
+## Evidence
 
-В работе Паризи и Дзампони численный результат помог сформулировать аналитическую задачу. Авторы затем указали модели на пробелы в доказательстве и опубликовали переписки. В MOSAIC результат делегирования зависел от масштаба команды и токенного бюджета. Оба наблюдения объясняют, почему в навыке сначала задаётся проверка и лишь затем выбирается форма работы. [Переписки Паризи и Дзампони](https://zenodo.org/records/20478428) · [MOSAIC, приложение S-V.4](https://arxiv.org/html/2610.35934v1)
+Parisi and Zamponi used a numerical observation to frame a problem for an analytical proof. They flagged gaps in the resulting proof and published the conversations. In MOSAIC, the benefit of delegation varied with team size and token budget. These cases informed the skill's emphasis on verifiable results and targeted delegation. [Parisi and Zamponi's conversations](https://zenodo.org/records/20478428) · [MOSAIC, Appendix S-V.4](https://arxiv.org/html/2610.35934v1)
 
-В небольшом испытании Codex решение шести задач повторили дважды в каждом режиме. Обычный запрос набрал **11/12** баллов, короткий навык с одним агентом — **12/12**, с дополнительным субагентом — **12/12**. Единственный потерянный балл пришёлся на синтаксическую ошибку в итоговом тесте Python. Командный режим в среднем потратил больше токенов. Эти наблюдения относятся к одной небольшой батарее задач.
+In a small Codex evaluation, each setup attempted the same six tasks twice. The plain prompt scored **11/12**, the short skill with one agent scored **12/12**, and the short skill with a subagent scored **12/12**. The baseline lost one point because the submitted Python test had a syntax error. The subagent runs used more tokens on average. These results cover one small set of tasks.
