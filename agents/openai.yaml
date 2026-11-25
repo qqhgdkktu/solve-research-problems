@@ -1,0 +1,4 @@
+interface:
+  display_name: "Решение сложных задач"
+  short_description: "Проверяемые решения и задания научным субагентам"
+  default_prompt: "Используй $solve-research-problems, чтобы решить задачу и проверить результат."
